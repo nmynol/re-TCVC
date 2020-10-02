@@ -9,6 +9,7 @@ import gensim
 import torch.utils.data as data
 import torch.backends.cudnn as cudnn
 import torch.optim as optim
+from tensorboardX import SummaryWriter
 
 from models.standard import *
 from util.utils import *
@@ -25,11 +26,12 @@ def set_parser():
     parser.add_argument('--sample_freq', type=int, default=250, help='sample frequency (/iteration)')
     parser.add_argument('--save_freq', type=int, default=25, help='save frequency (/epoch)')
     parser.add_argument('--sample_path', default="./samples", help='sample path')
+    parser.add_argument('--board_path', default="./board", help='tensorboard path')
     parser.add_argument('--checkpoint_path', default="", help='load pre-trained model?')
     parser.add_argument('--save_path', default="./param", help='the path to save the model to')
     parser.add_argument('--train_batch_size', type=int, default=8, help='training batch size')
     parser.add_argument('--test_batch_size', type=int, default=8, help='testing batch size')
-    parser.add_argument('--epoch', type=int, default=50, help='number of epochs to train for')
+    parser.add_argument('--epoch', type=int, default=500, help='number of epochs to train for')
     parser.add_argument('--input_nc', type=int, default=1, help='input image channels')
     parser.add_argument('--output_nc', type=int, default=3, help='output image channels')
     parser.add_argument('--ngf', type=int, default=64, help='不知道是啥channel')
@@ -64,9 +66,9 @@ if __name__ == '__main__':
     optimizerD = optim.Adam(netD.parameters(), lr=opt.lr * 0.1, betas=(opt.beta1, 0.999))
 
     epoch = 1
-
+    count = 0
     if opt.checkpoint_path:
-        epoch = load_state(opt.checkpoint_path, netG, netD, optimizerG, optimizerD) + 1
+        epoch, count = load_state(opt.checkpoint_path, netG, netD, optimizerG, optimizerD) + 1
 
     criterionGAN = AdversarialLoss()
     criterionSTYLE = StyleLoss()
@@ -90,6 +92,8 @@ if __name__ == '__main__':
     testing_data_loader = DataLoader(train_set, batch_size=opt.test_batch_size,
                                      pin_memory=True, num_workers=opt.workers)
     sample_iterator = create_iterator(6, test_set)
+
+    writer = SummaryWriter(opt.board_path)
 
     for epoch in range(epoch, opt.epoch + 1):
         for iteration, [input, real, prev] in enumerate(training_data_loader):
@@ -154,6 +158,8 @@ if __name__ == '__main__':
             loss_G.backward()
             optimizerG.step()
 
+            count = count + 1
+
             ############################
             # (3) log & sample & save
             ############################
@@ -165,8 +171,17 @@ if __name__ == '__main__':
                         ("Loss_D_Real", loss_D_real.item()), ("Loss_D_Fake", loss_D_fake.item())]
                 log_train_data(logs, opt)
 
+                writer.add_scalar("Loss_G", loss_G.item(), count)
+                writer.add_scalar("Loss_D", loss_D.item(), count)
+                writer.add_scalar("Loss_G_adv", loss_G_gan.item(), count)
+                writer.add_scalar("Loss_G_L1", loss_G_l1.item(), count)
+                writer.add_scalar("Loss_G_style", loss_G_style.item(), count)
+                writer.add_scalar("Loss_G_content", loss_G_content.item(), count)
+                writer.add_scalar("Loss_D_Real", loss_D_real.item(), count)
+                writer.add_scalar("Loss_D_Fake", loss_D_fake.item(), count)
+
             if iteration % opt.sample_freq == 0:
-                sample(epoch, iteration, opt, sample_iterator, netG, device)
+                sample(epoch, iteration, count, opt, sample_iterator, netG, device, writer)
 
             print("===> Epoch[{}]({}/{}): Loss_D: {:.4f} Loss_G: {:.4f} LossD_Fake: {:.4f} LossD_Real: {:.4f}  "
                   "LossG_Adv: {:.4f} LossG_L1: {:.4f} LossG_Style {:.4f} LossG_Content {:.4f}".format(
@@ -178,4 +193,5 @@ if __name__ == '__main__':
                         'optimizerG': optimizerG.state_dict(),
                         'state_dictD': netD.state_dict(),
                         'optimizerD': optimizerD.state_dict(),
-                        'epoch': epoch}, opt.save_path, epoch)
+                        'epoch': epoch,
+                        'count': count}, opt.save_path, epoch)

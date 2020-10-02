@@ -10,7 +10,7 @@ def save_state(state, path, epoch):
     if not os.path.exists(path):
         os.makedirs(path)
     print("=> saving checkpoint of epoch " + str(epoch))
-    torch.save(state, path + 'params_' + str(epoch) + '.pth')
+    torch.save(state, os.path.join(path, 'params_' + str(epoch) + '.pth'))
     print("saving completed.")
 
 
@@ -23,8 +23,9 @@ def load_state(path, netG, netD, optimizerG, optimizerD):
     netD.load_state_dict(checkpoint['state_dictD'])
     optimizerD.load_state_dict(checkpoint['optimizerD'])
     epoch = checkpoint['epoch'] + 1
+    count = checkpoint['count']
     print("loading completed.")
-    return epoch
+    return epoch, count
 
 
 def log_train_data(loginfo, opt):
@@ -36,7 +37,7 @@ def log_train_data(loginfo, opt):
         f.write('%s\n' % ' '.join([str(item[1]) for item in loginfo]))
 
 
-def sample(epoch, iteration, opt, sample_iterator, netG, device):
+def sample(epoch, iteration, count, opt, sample_iterator, netG, device, writer):
     with torch.no_grad():
 
         input, target, prev_frame = next(sample_iterator)
@@ -48,14 +49,15 @@ def sample(epoch, iteration, opt, sample_iterator, netG, device):
         target = postprocess(target)
 
     img = stitch_images(input, target, prediction)
-    samples_dir = opt.sample_path
-
-    if not os.path.exists(samples_dir):
-        os.makedirs(samples_dir)
+    # samples_dir = opt.sample_path
+    #
+    # if not os.path.exists(samples_dir):
+    #     os.makedirs(samples_dir)
 
     sample = "sample" + "_" + str(epoch) + "_" + str(iteration).zfill(5) + ".png"
     print('\nsaving sample ' + sample + ' - learning rate: ' + str(opt.lr))
-    img.save(os.path.join(samples_dir, sample))
+    # img.save(os.path.join(samples_dir, sample))
+    writer.add_image("sample_image", np.array(img) / 255, count, dataformats='HWC')
 
 
 def print_network(net):

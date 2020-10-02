@@ -12,5 +12,20 @@ import numpy as np
 # cv2.imshow("input", input.astype('float64'))
 # cv2.waitKey(0)
 
-for i in range(1, 5):
-    print(i)
+# for i in range(1, 5):
+#     print(i)
+
+import os
+import cv2
+
+video_cap = cv2.VideoCapture('./import.mp4')
+
+frame_count = 0
+
+while True:
+    ret, frame = video_cap.read()
+    if ret is False:
+        break
+    frame_count = frame_count + 1
+
+print(frame_count)

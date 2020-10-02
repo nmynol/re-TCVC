@@ -6,8 +6,8 @@ from os import listdir
 import sys
 
 parser = argparse.ArgumentParser(description='pix2pix-PyTorch-implementation')
-parser.add_argument('--video_path', required=True, help='Path of video to extract frames')
-parser.add_argument('--output_path', required=True, help='output folder for frames')
+parser.add_argument('--video_path', default='./import.mp4', help='Path of video to extract frames')
+parser.add_argument('--output_path', default='./data/train', help='output folder for frames')
 opt = parser.parse_args()
 print(opt)
 
@@ -27,18 +27,19 @@ while True:
     if np.shape(frame) == ():
         break
 
-    if np.sum(frame) > 10000:
-        currentframe +=1
-        frame_name = os.path.join(output_path,'frame'+ str(counter).zfill(5) + '.jpg')
-   
-        if currentframe > 400:
-            if currentframe % 3 == 0:
-                print('Creating...'+ frame_name)
-                cv2.imwrite(frame_name, frame)
-                counter += 1
- 
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+    # if np.sum(frame) > 25000000:
+    currentframe += 1
+    frame_name = os.path.join(output_path, 'frame' + str(counter).zfill(5) + '.jpg')
+
+    # if currentframe > 20000:
+    if currentframe % 3 == 0:
+        print('Creating...' + frame_name)
+        frame = cv2.resize(frame, (512, 512))
+        cv2.imwrite(frame_name, frame)
+        counter += 1
+
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
 
 cap.release()
 cv2.destroyAllWindows()
