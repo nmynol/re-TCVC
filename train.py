@@ -68,7 +68,7 @@ if __name__ == '__main__':
     epoch = 1
     count = 0
     if opt.checkpoint_path:
-        epoch, count = load_state(opt.checkpoint_path, netG, netD, optimizerG, optimizerD) + 1
+        epoch, count = load_state(opt.checkpoint_path, netG, netD, optimizerG, optimizerD)
 
     criterionGAN = AdversarialLoss()
     criterionSTYLE = StyleLoss()
