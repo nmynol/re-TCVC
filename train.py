@@ -104,7 +104,7 @@ if __name__ == '__main__':
 
             input, real, prev = input.to(device), real.to(device), prev.to(device)
 
-            with torch.no_grad:
+            with torch.no_grad():
                 prev = netDown(prev)
 
             ############################

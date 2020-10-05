@@ -158,14 +158,12 @@ class Downresolution(nn.Module):
             nn.MaxPool2d(scale)
         )
         self.up = nn.Sequential(
-            nn.Upsample(scale_factor=scale, mode="bilinear")
+            nn.Upsample(scale_factor=scale, mode="bilinear", align_corners=True)
         )
 
     def forward(self, x):
         x = self.down(x)
-        print(x.shape)
         x = self.up(x)
-        print(x.shape)
         return x
 
 
