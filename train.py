@@ -19,12 +19,12 @@ from util.data import *
 
 def set_parser():
     parser = argparse.ArgumentParser(description='pix2pix-PyTorch-implementation')
-    parser.add_argument('--train_set', default='./data/train', help='facades')
-    parser.add_argument('--test_set', default='./data/test', help='facades')
+    parser.add_argument('--train_set', default='/data2/wn/Video_dataset/train/frame', help='facades')
+    parser.add_argument('--test_set', default='/data2/wn/Video_dataset/test/frame', help='facades')
     parser.add_argument('--logfile', default='./log', help='trainlogs.dat')
     parser.add_argument('--log_freq', type=int, default=25, help='log frequency (/iteration)')
     parser.add_argument('--sample_freq', type=int, default=250, help='sample frequency (/iteration)')
-    parser.add_argument('--save_freq', type=int, default=25, help='save frequency (/epoch)')
+    parser.add_argument('--save_freq', type=int, default=1, help='save frequency (/epoch)')
     parser.add_argument('--sample_path', default="./samples", help='sample path')
     parser.add_argument('--board_path', default="./board", help='tensorboard path')
     parser.add_argument('--checkpoint_path', default="", help='load pre-trained model?')
@@ -67,8 +67,6 @@ if __name__ == '__main__':
 
     epoch = 1
     count = 0
-    if opt.checkpoint_path:
-        epoch, count = load_state(opt.checkpoint_path, netG, netD, optimizerG, optimizerD)
 
     criterionGAN = AdversarialLoss()
     criterionSTYLE = StyleLoss()
@@ -83,6 +81,9 @@ if __name__ == '__main__':
     critertionSTYLE = criterionSTYLE.to(device)
     criterionCONTENT = criterionCONTENT.to(device)
     criterionMSE = criterionMSE.to(device)
+
+    if opt.checkpoint_path:
+        epoch, count = load_state(opt.checkpoint_path, netG, netD, optimizerG, optimizerD)
 
     train_set = MyDataset(opt.train_set)
     test_set = MyDataset(opt.test_set)

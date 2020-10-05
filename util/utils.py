@@ -47,6 +47,7 @@ def sample(epoch, iteration, count, opt, sample_iterator, netG, device, writer):
         prediction = postprocess(prediction)
         input = postprocess(input)
         target = postprocess(target)
+        # prev_frame = postprocess(prev_frame)
 
     img = stitch_images(input, target, prediction)
     # samples_dir = opt.sample_path

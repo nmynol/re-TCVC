@@ -19,9 +19,9 @@ from util.data import *
 
 def set_parser():
     parser = argparse.ArgumentParser(description='pix2pix-PyTorch-implementation')
-    parser.add_argument('--val_set', default='./make_video/origin_pic', help='facades')
-    parser.add_argument('--save_to', default='./make_video/output_pic', help='facades')
-    parser.add_argument('--checkpoint_path', default="./make_video/param/params.pth", help='load pre-trained model?')
+    parser.add_argument('--val_set', default='../dataset/re-TCVC/make_video/origin_pic', help='facades')
+    parser.add_argument('--save_to', default='../dataset/re-TCVC/make_video/output_pic', help='facades')
+    parser.add_argument('--checkpoint_path', default="../dataset/re-TCVC/make_video/param/params.pth", help='load pre-trained model?')
     parser.add_argument('--val_batch_size', type=int, default=1, help='validation batch size')
     parser.add_argument('--workers', type=int, default=4, help='number of threads for data loader to use')
     parser.add_argument('--seed', type=int, default=1234, help='random seed to use. Default=123')
