@@ -43,6 +43,7 @@ def set_parser():
     parser.add_argument('--Stylelamb', type=int, default=1000, help='weight on Style term in objective')
     parser.add_argument('--Contentlamb', type=int, default=1, help='weight on Content term in objective')
     parser.add_argument('--Adversariallamb', type=int, default=0.1, help='weight on Adv term in objective')
+    parser.add_argument('--down_scale', type=int, default=8, help='down sample scale')
     return parser.parse_args()
 
 
@@ -61,6 +62,7 @@ if __name__ == '__main__':
 
     netG = InpaintGenerator()
     netD = Discriminator(in_channels=7, use_sigmoid=True)
+    netDown = Downresolution(opt.down_scale)
 
     optimizerG = optim.Adam(netG.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999))
     optimizerD = optim.Adam(netD.parameters(), lr=opt.lr * 0.1, betas=(opt.beta1, 0.999))
@@ -76,6 +78,7 @@ if __name__ == '__main__':
 
     netD = netD.to(device)
     netG = netG.to(device)
+    netDown = netDown.to(device)
     criterionGAN = criterionGAN.to(device)
     criterionL1 = criterionL1.to(device)
     critertionSTYLE = criterionSTYLE.to(device)
@@ -100,6 +103,9 @@ if __name__ == '__main__':
         for iteration, [input, real, prev] in enumerate(training_data_loader):
 
             input, real, prev = input.to(device), real.to(device), prev.to(device)
+
+            with torch.no_grad:
+                prev = netDown(prev)
 
             ############################
             # (1) train discriminator

@@ -151,6 +151,24 @@ class Discriminator(BaseNetwork):
         return outputs
 
 
+class Downresolution(nn.Module):
+    def __init__(self, scale):
+        super(Downresolution, self).__init__()
+        self.down = nn.Sequential(
+            nn.MaxPool2d(scale)
+        )
+        self.up = nn.Sequential(
+            nn.Upsample(scale_factor=scale, mode="bilinear")
+        )
+
+    def forward(self, x):
+        x = self.down(x)
+        print(x.shape)
+        x = self.up(x)
+        print(x.shape)
+        return x
+
+
 if __name__ == '__main__':
 
     # net = InpaintGenerator()
